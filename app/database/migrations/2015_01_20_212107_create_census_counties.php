@@ -19,7 +19,8 @@ class CreateCensusCounties extends Migration {
 			$table->string('county_ansi');
 			$table->string('county_name');
 			$table->string('ansi_Cl');
-			$table->primary(array('state_ansi','county_ansi'));
+			$table->string('county_fips');
+			$table->primary('county_fips');
 		});
 	}
 

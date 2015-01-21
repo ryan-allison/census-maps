@@ -24,3 +24,5 @@ Route::get('users', function() {
 Route::get('test', function() {
 	return View::make('test');
 });
+
+Route::get('mapData', 'MapDataController@getJSON');
