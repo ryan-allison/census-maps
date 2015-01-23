@@ -12,7 +12,7 @@
 */
 
 Route::get('/', function() {
-	return View::make('hello');
+	return View::make('lai');
 });
 
 Route::get('users', function() {
