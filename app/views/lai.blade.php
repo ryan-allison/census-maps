@@ -26,8 +26,10 @@
 			Data to View
 			<select class="form-control" id="metric">
 				<option value="income" selected>Income</option>
-				<option value="size">Household Size</option>
-				<option value="workers">Number of Commuters</option>
+				<option value="h">Housing Costs</option>
+				<option value="t">Transportation Costs</option>
+				<option value="autos">Cars per Household</option>
+				<option value="vmt">Annual Vehicle Miles Traveled</option>
 			</select>
 			<br>
 			<br>
@@ -57,7 +59,7 @@
 	<script src="http://code.highcharts.com/maps/highmaps.js"></script>
 	<script src="http://code.highcharts.com/maps/modules/data.js"></script>
 	<script src="http://code.highcharts.com/maps/modules/exporting.js"></script>
-	<script src="http://code.highcharts.com/mapdata/countries/us/us-all-all.js"></script>
+	<script src="http://code.highcharts.com/mapdata/countries/us/us-all-all-highres.js"></script>
 
 	{{-- javascript for generating the map --}}
 	{{ HTML::script('js/lai.js') }}

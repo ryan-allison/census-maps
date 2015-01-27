@@ -3,7 +3,9 @@ function getMapData(){
 	// collect selections
 	var options = {
 		household_type: $("#household_type").val(),
-		metric: $("#metric").val()
+		household_title: $("#household_type option:selected").text(),
+		metric: $("#metric").val(),
+		metric_title: $("#metric option:selected").text()
 	}
 
 	// get the data from server
@@ -34,14 +36,13 @@ function doneLoading(response){
 
 function drawMap(mapdata, settings){
 
-	var countiesMap = Highcharts.geojson(Highcharts.maps['countries/us/us-all-all']),
-		lines = Highcharts.geojson(Highcharts.maps['countries/us/us-all-all'], 'mapline');
+	var countiesMap = Highcharts.geojson(Highcharts.maps['countries/us/us-all-all-highres']),
+		lines = Highcharts.geojson(Highcharts.maps['countries/us/us-all-all-highres'], 'mapline');
 
 	// Add state acronym for tooltip
 	Highcharts.each(countiesMap, function (mapPoint) {
 		mapPoint.name = mapPoint.name + ', ' + mapPoint.properties['hc-key'].substr(3, 2).toUpperCase();
 	});
-
 
 	var options = {
 		chart : {
@@ -50,7 +51,7 @@ function drawMap(mapdata, settings){
 		},
 
 		title : {
-			text : 'Median Income for Median-Income Families by County'
+			text : "Map"
 		},
 
 		legend: {
@@ -62,8 +63,7 @@ function drawMap(mapdata, settings){
 		},
 
 		colorAxis: {
-			min: 30000,
-			max: 90000
+			tickPixelInterval: 100
 		},
 
 		plotOptions: {
@@ -77,10 +77,9 @@ function drawMap(mapdata, settings){
 			mapData : countiesMap,
 			data: mapdata,
 			joinBy: ['fips', 'county_code'],
-			name: 'Median Income',
+			name: '',
 			tooltip: {
-				//pointFormat: "{series.color} {point.name}: {point.value}<br/>",
-				valuePrefix: '$'
+				headerFormat: ''
 			},
 			borderWidth: 0.5,
 			states: {
@@ -101,6 +100,11 @@ function drawMap(mapdata, settings){
 		}]
 	};
 
+	// merge the options with any specific ones sent from server
+	$.extend(true, options, settings);
+
+	console.log(options);
+
 	// Instantiate the map
 	$('#container').highcharts('Map', options);
 }
@@ -110,5 +114,5 @@ $(function () {
 	// register listener for button to get new map data and load default map
 	$('#submit').on('click', function () {
 		startLoading();
-	}).trigger('click');;
+	}).trigger('click');
 });
