@@ -21,8 +21,14 @@ Route::get('users', function() {
 	return View::make('users')->with('users', $users);
 });
 
-Route::get('test', function() {
-	return View::make('test');
+Route::get('about', function() {
+	return View::make('about');
+});
+
+Route::get('contact', function() {
+	return View::make('contact');
 });
 
 Route::get('mapData', 'MapDataController@getJSON');
+
+Route::get('countyList', 'CountyListController@getJSON');
