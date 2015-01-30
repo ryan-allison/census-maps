@@ -3,7 +3,7 @@
 class MapDataController extends BaseController {
 	private $_percentage_metrics = array("h", "t");
 
-	public function getJSON(){
+	public function responseJSON(){
 		$household_type = Input::get("household_type");
 		$household_title = Input::get("household_title");
 		$metric = Input::get("metric");
@@ -35,7 +35,9 @@ class MapDataController extends BaseController {
 					$max = $value;
 				}
 
-				$data_arr[] = array("county_code" => $lai->county_fips, "value" => $value);
+				$full_name = $lai->counties->county_name . ", " . $lai->counties->state;
+
+				$data_arr[] = array("fullname" => $full_name, "county_code" => $lai->county_fips, "value" => $value);
 			}
 		});
 

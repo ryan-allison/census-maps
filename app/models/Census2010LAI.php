@@ -7,6 +7,6 @@ class Census2010LAI extends Eloquent {
 	public $timestamps = false;
 
 	public function counties(){
-		return $this->belongs_to('County');
+		return $this->belongsTo('County', 'county_fips', 'county_fips');
 	}
 }

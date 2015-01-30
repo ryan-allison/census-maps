@@ -29,6 +29,6 @@ Route::get('contact', function() {
 	return View::make('contact');
 });
 
-Route::get('mapData', 'MapDataController@getJSON');
+Route::get('api/mapData', 'MapDataController@responseJSON');
 
-Route::get('countyList', 'CountyListController@getJSON');
+Route::get('api/countyList', 'CountyListController@responseJSON');

@@ -7,6 +7,6 @@ class County extends Eloquent {
 	public $timestamps = false;
 
 	public function census2010LAI(){
-		$this->has_one('Census2010LAI');
+		$this->has_one('Census2010LAI', 'county_fips', 'county_fips');
 	}
 }

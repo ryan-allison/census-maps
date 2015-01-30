@@ -1,3 +1,60 @@
+
+function searchBoxInit(){
+	// need an array of strings for the suggestion engine
+	var strings = [];
+	$.each(counties, function(i){
+		strings.push(i);
+	});
+
+	// constructs the suggestion engine
+	var sugg_engine = new Bloodhound({
+		datumTokenizer: Bloodhound.tokenizers.obj.whitespace('value'),
+		queryTokenizer: Bloodhound.tokenizers.whitespace,
+		local: $.map(strings, function(state) { return { value: state }; })
+	});
+
+	// kicks off the loading/processing of `local` and `prefetch`
+	sugg_engine.initialize();
+
+	$('.typeahead')
+		.typeahead({
+			hint: true,
+			highlight: true,
+			minLength: 1,
+			autoselect: true
+		},
+		{
+			name: 'strings',
+			displayKey: 'value',
+			// `ttAdapter` wraps the suggestion engine in an adapter that
+			// is compatible with the typeahead jQuery plugin
+			source: sugg_engine.ttAdapter()
+		})
+		.on("typeahead:selected", function(e){
+			zoomToCounty();
+		});
+}
+
+function zoomToCounty(){
+	// get the value in the search box the user entered
+	var searched = $("#search_box").val();
+
+	// lookup the fips identification code for searched county
+	var target_fips = counties[searched].fips;
+
+	// zoom to target county, then zoom out a little
+	var highchart = $('#container').highcharts();
+	highchart.get(target_fips).zoomTo();
+	highchart.mapZoom(5);
+
+	// select the county so its more visible
+	if(!highchart.get(target_fips).selected){
+		highchart.get(target_fips).select();
+	}
+
+}
+
+
 function getMapData(){
 
 	// collect selections
@@ -10,15 +67,15 @@ function getMapData(){
 
 	// get the data from server
 	$.ajax({
-		url: 'mapData',
+		url: 'api/mapData',
 		data: options
 	})
 	.done(function(response){
-		doneLoading(response);
+		doneMapDataLoading(response);
 	});
 }
 
-function startLoading(){
+function startMapDataLoading(){
 	$(".form-control").prop("disabled", true);
 
 	if($('#container').highcharts()){
@@ -30,12 +87,22 @@ function startLoading(){
 	getMapData();
 }
 
-function doneLoading(response){
+function doneMapDataLoading(response){
 	drawMap(response.data, response.settings);
 	$(".form-control").prop("disabled", false);
+
+	var search_target = $("#search_box").val();
+	if(search_target != ""){
+		zoomToCounty();
+	}
 }
 
 function drawMap(mapdata, settings){
+
+	// Assign id's
+	$.each(mapdata, function () {
+		this.id = this.county_code;
+	});
 
 	var countiesMap = Highcharts.geojson(Highcharts.maps['countries/us/us-all-all-highres']),
 		lines = Highcharts.geojson(Highcharts.maps['countries/us/us-all-all-highres'], 'mapline');
@@ -71,6 +138,15 @@ function drawMap(mapdata, settings){
 			mapline: {
 				showInLegend: false,
 				enableMouseTracking: false
+			},
+			series: {
+				point: {
+					events: {
+						select: function(e){
+							$("#search_box").val(this.fullname);
+						}
+					}
+				}
 			}
 		},
 
@@ -79,8 +155,10 @@ function drawMap(mapdata, settings){
 			data: mapdata,
 			joinBy: ['fips', 'county_code'],
 			name: '',
+			allowPointSelect: true,
 			tooltip: {
-				headerFormat: ''
+				headerFormat: '',
+				pointFormat: '{point.fullname}: {point.value}<br/>'
 			},
 			borderWidth: 0.5,
 			states: {
@@ -111,51 +189,25 @@ function drawMap(mapdata, settings){
 $(function () {
 	// register listeners for selection changes to get new map data
 	$('#metric').on('change', function() {
-		startLoading();
+		startMapDataLoading();
 	});
 
 	$('#household_type').on('change', function() {
-		startLoading();
+		startMapDataLoading();
 	});
 
 	// load default map
-	startLoading();
+	startMapDataLoading();
 
-	var states = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California',
-		'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii',
-		'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana',
-		'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota',
-		'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire',
-		'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota',
-		'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island',
-		'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont',
-		'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'
-	];
+	// init search box and suggestion engine
+	searchBoxInit();
 
-	// constructs the suggestion engine
-	var states = new Bloodhound({
-		datumTokenizer: Bloodhound.tokenizers.obj.whitespace('value'),
-		queryTokenizer: Bloodhound.tokenizers.whitespace,
-		// `states` is an array of state names defined in "The Basics"
-		local: $.map(states, function(state) { return { value: state }; })
+	$("#reset_button").on("click", function(){
+		$("#search_box").val("");
+		$('#container').highcharts().mapZoom(500);
+		var arr = $('#container').highcharts().getSelectedPoints();
+		if(typeof arr[0] != "undefined"){
+			arr[0].select();
+		}
 	});
-
-	// kicks off the loading/processing of `local` and `prefetch`
-	states.initialize();
-
-	$('.typeahead').typeahead({
-			hint: true,
-			highlight: true,
-			minLength: 1
-		},
-		{
-			name: 'states',
-			displayKey: 'value',
-			// `ttAdapter` wraps the suggestion engine in an adapter that
-			// is compatible with the typeahead jQuery plugin
-			source: states.ttAdapter()
-		});
-
-	//$('.typeahead.input-sm').siblings('input.tt-hint').addClass('hint-small');
-	//$('.typeahead.input-lg').siblings('input.tt-hint').addClass('hint-large');
 });

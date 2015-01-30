@@ -2,14 +2,24 @@
 
 class CountyListController extends BaseController {
 
-	public function getJSON(){
+	static private function getCounties(){
 		$counties = County::all();
 
 		$data_arr = array();
 		foreach($counties as $county){
-			$data_arr[] = array("name" => $county->county_name, "state" => $county->state);
+			$county_n_state = $county->county_name . ", " .$county->state;
+			$data_arr[$county_n_state] = array("state" => $county->state, "fips" => $county->county_fips);
 		}
 
-		return Response::json($data_arr);
+		return $data_arr;
+	}
+
+	public function responseJSON(){
+		//return Response::json($this->getCounties());
+		return Response::json(CountyListController::getCounties());
+	}
+
+	static public function printJSON(){
+		echo json_encode(CountyListController::getCounties());
 	}
 }

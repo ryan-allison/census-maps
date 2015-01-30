@@ -2,6 +2,9 @@
 
 @section('content')
 
+	<script>
+		var counties = {{{ CountyListController::printJSON()}}}
+	</script>
 
 	<div>
 		<div style="text-align: center; padding: 2em;">
@@ -21,7 +24,6 @@
 			Household Type
 			<select class="form-control" id="household_type">
 				<option value="hh_type1_" selected>Median-Income Family</option>
-				<option value="hh_type2_">Very Low-Income Individual</option>
 				<option value="hh_type3_">Working Individual</option>
 				<option value="hh_type4_">Single Professional</option>
 				<option value="hh_type5_">Retired Couple</option>
@@ -32,10 +34,11 @@
 			<br>
 			<br>
 			<div style="width: 100%">
+				County Search
 				<input id="search_box" type="text" class="form-control typeahead" placeholder="Search for..." style="background-color: #ffffff; width: 100%">
-				<br>
-				<button class="btn btn-primary" type="button" style="margin-top: 1em">Go!</button>
 			</div>
+			<br>
+			<button id="reset_button" type="button" class="btn btn-primary">Reset</button>
 
 		</div>
 		<div class="col-md-9">
