@@ -10,12 +10,13 @@ function searchBoxInit(){
 	var sugg_engine = new Bloodhound({
 		datumTokenizer: Bloodhound.tokenizers.obj.whitespace('value'),
 		queryTokenizer: Bloodhound.tokenizers.whitespace,
-		local: $.map(strings, function(state) { return { value: state }; })
+		local: $.map(strings, function(county) { return { value: county }; })
 	});
 
 	// kicks off the loading/processing of `local` and `prefetch`
 	sugg_engine.initialize();
 
+	// configure the Typeahead text field
 	$('.typeahead')
 		.typeahead({
 			hint: true,
@@ -30,7 +31,8 @@ function searchBoxInit(){
 			// is compatible with the typeahead jQuery plugin
 			source: sugg_engine.ttAdapter()
 		})
-		.on("typeahead:selected", function(e){
+		.on("typeahead:selected", function(){
+			// when an item is selected, call zoom function
 			zoomToCounty();
 		});
 }
@@ -42,7 +44,7 @@ function zoomToCounty(){
 	// lookup the fips identification code for searched county
 	var target_fips = counties[searched].fips;
 
-	// zoom to target county, then zoom out a little
+	// zoom to target county, then zoom out a little (for looks)
 	var highchart = $('#container').highcharts();
 	highchart.get(target_fips).zoomTo();
 	highchart.mapZoom(5);
@@ -51,11 +53,19 @@ function zoomToCounty(){
 	if(!highchart.get(target_fips).selected){
 		highchart.get(target_fips).select();
 	}
-
 }
 
+function startMapDataLoading(){
+	// prevent any changes to inputs while loading
+	$(".form-control").prop("disabled", true);
 
-function getMapData(){
+	// get rid of current highcharts object
+	if($('#container').highcharts()){
+		$('#container').highcharts().destroy();
+	}
+
+	// show loading animation
+	$("#progress_container").clone().appendTo("#container");
 
 	// collect selections
 	var options = {
@@ -69,28 +79,20 @@ function getMapData(){
 	$.ajax({
 		url: 'api/mapData',
 		data: options
-	})
-	.done(function(response){
+	}).done(function(response){
+		// response received from server
 		doneMapDataLoading(response);
 	});
 }
 
-function startMapDataLoading(){
-	$(".form-control").prop("disabled", true);
-
-	if($('#container').highcharts()){
-		$('#container').highcharts().destroy();
-	}
-
-	$("#progress_container").clone().appendTo("#container");
-
-	getMapData();
-}
-
 function doneMapDataLoading(response){
+	// draw the map with server response data
 	drawMap(response.data, response.settings);
+
+	// re-enable the inputs
 	$(".form-control").prop("disabled", false);
 
+	// if a county had been selected before, re-zoom to it
 	var search_target = $("#search_box").val();
 	if(search_target != ""){
 		zoomToCounty();
@@ -99,19 +101,21 @@ function doneMapDataLoading(response){
 
 function drawMap(mapdata, settings){
 
-	// Assign id's
+	// Assign ids
 	$.each(mapdata, function () {
 		this.id = this.county_code;
 	});
 
+	// init the GeoJSON based maps
 	var countiesMap = Highcharts.geojson(Highcharts.maps['countries/us/us-all-all-highres']),
 		lines = Highcharts.geojson(Highcharts.maps['countries/us/us-all-all-highres'], 'mapline');
 
-	// Add state acronym for tooltip
+	// add state acronym for tooltip
 	Highcharts.each(countiesMap, function (mapPoint) {
 		mapPoint.name = mapPoint.name + ', ' + mapPoint.properties['hc-key'].substr(3, 2).toUpperCase();
 	});
 
+	// configure chart settings
 	var options = {
 		chart : {
 			borderWidth : 0,
@@ -202,6 +206,7 @@ $(function () {
 	// init search box and suggestion engine
 	searchBoxInit();
 
+	// init Reset button to return zoom and search box to default
 	$("#reset_button").on("click", function(){
 		$("#search_box").val("");
 		$('#container').highcharts().mapZoom(500);

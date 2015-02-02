@@ -3,6 +3,7 @@
 @section('content')
 
 	<script>
+		// since the list of counties won't change, embed them in the page
 		var counties = {{{ CountyListController::printJSON()}}}
 	</script>
 

@@ -165,6 +165,7 @@ fieldset[disabled] .twitter-typeahead .tt-input {
   background-clip: padding-box;
   *border-right-width: 2px;
   *border-bottom-width: 2px;
+   cursor: default;
 }
 .tt-dropdown-menu .tt-suggestion {
   display: block;
