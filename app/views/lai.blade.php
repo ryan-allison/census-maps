@@ -58,6 +58,8 @@
 		</div>
 	</div>
 
+
+
 	<script src="http://code.highcharts.com/maps/highmaps.js"></script>
 	<script src="http://code.highcharts.com/maps/modules/data.js"></script>
 	<script src="http://code.highcharts.com/maps/modules/exporting.js"></script>
